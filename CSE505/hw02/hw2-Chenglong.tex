@@ -1,0 +1,225 @@
+\documentclass[letter, notitlepage]{article}
+\usepackage{bussproofs}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage[usenames,dvipsnames]{color} % Required for specifying custom colors and referring to colors by name
+\usepackage{listings}
+\usepackage[top=1in, bottom=1in, left=0.85in, right=0.85in]{geometry}
+\usepackage{xcolor}
+\usepackage{bera}
+\usepackage{amsthm}
+\usepackage{stackengine}
+\usepackage[all,cmtip]{xy}
+
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beramono}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{property}{Property}
+
+% Optional to turn on the short abbreviations
+\EnableBpAbbreviations
+
+
+
+\begin{document}
+\title{CSE505 Homework\#2}
+\date{}
+\author{Chenglong Wang}
+\maketitle
+
+\section{Problem 1: Small-step Semantics}
+
+In the following context, we use symbol $\mathit{H}$ for Heap, $e$ for expressions, $i$ for int values, $x$ for variables, and $l$ for lists of integers.
+
+
+\paragraph{Heap} we define the heap $H$ as a map from variables to an pair of type ($\mathsf{Int}\times \mathsf{(list~Int)}$). i.e. the heap $H$ has the following type:
+$$H:\mathsf{Var} \rightarrow \mathsf{Int} \times \mathsf{(list~Int)}$$
+
+\paragraph{Eval} The function $\mathit{Eval}(H, e)$ is the evaluation function for an expression, as defined in the lecture, $Eval$ takes the current heap $H$ and an expression $e$, the result is either a boolean or an integer depending on the type of $e$. 
+
+In the following rules, $H~|~s \to H'~|~s'$ can be pronounced as ``Evaluate one step on the statement $s$ under the current heap H will update the heap to $H'$ and the statement is reduced to $s'$''.
+
+\begin{center}
+\AXC{\vphantom{$|$}}\RightLabel{(Step-Nop)}
+\UIC{$H~|~\mathsf{Seq}~\mathsf{Nop}~s \to H~|~s$}
+\DP
+~~~
+\AXC{$\mathit{Eval}(H, e)=n$ ~~~~ $H~x = (i, l)$}\RightLabel{(Step-Assign)}
+\UIC{$H~|~\mathsf{Assign}~x~e \to [x\mapsto(i, l)]H ~|~ \mathsf{Nop}$}
+\DP
+\end{center}
+
+\begin{center}
+\AXC{$H~|~s_1 \to H_1~|~s_1'$}\RightLabel{(Step-Seq)}
+\UIC{$H~|~\mathsf{Seq}~s_1~s_2 \to H_1~|~\mathsf{Seq}~s_1'~s_2$}
+\DP
+~~~
+\AXC{$\mathit{Eval}(H, e)=\mathtt{false}$}\RightLabel{(Step-Cond-F)}
+\UIC{$H~|~\mathsf{Cond}~e~s \to H~|~\mathsf{Nop}$}
+\DP
+\end{center}
+
+\begin{center}
+\AXC{$\mathit{Eval}(H, e)=\mathtt{true}$}\RightLabel{(Step-Cond-T)}
+\UIC{$H~|~\mathsf{Cond}~e~s \to H~|~s$}
+\DP
+~~~
+\AXC{$\mathit{Eval}(H, e)=\mathtt{false}$}\RightLabel{(Step-While-F)}
+\UIC{$H~|~\mathsf{While}~e~s \to H~|~\mathsf{Nop}$}
+\DP
+\end{center}
+
+\begin{center}
+\AXC{$\mathit{Eval}(H, e)=\mathtt{true}$} \RightLabel{(Step-While-T)}
+\UIC{$H~|~\mathsf{While}~e~s \to H~|~\mathsf{Seq}~s~(\mathsf{While}~e~s)$}
+\DP
+\end{center}
+
+\begin{center}
+\AXC{$H~x = (i, l)$} \RightLabel{(Step-PushVar)}
+\UIC{$H~|~\mathsf{PushVar}~x \to [x\mapsto(i, i::l)]H~|~\mathsf{Nop}$}
+\DP
+\end{center}
+
+\begin{center}
+\AXC{$H~x = (i, [~])$}\RightLabel{(Step-PopVar-E)}
+\UIC{$H~|~\mathsf{PopVar}~x \to \mathsf{Nop}$}
+\DP
+~~~
+\AXC{$H~x = (i, i'::l)$}\RightLabel{(Step-PopVar)}
+\UIC{$H~|~\mathsf{PopVar}~x \to [x\mapsto(i',l)]H~|~\mathsf{Nop}$}
+\DP
+\end{center}
+
+\section{Problem 2}
+Before proving the theorem, we first define the function $\mathsf{nPushVar}:\mathsf{Var}\to \mathsf{Stmt} \to Int$.
+\[
+\begin{array}{l}
+	\mathsf{nPushVar}~x~\mathsf{Nop}  := 0 \\
+	\mathsf{nPushVar}~x~(\mathsf{Assign}~y~e) := 0\\
+	\mathsf{nPushVar}~x~(\mathsf{Seq}~s_1~s_2)  := \mathsf{nPushVar}~x~s_1 + \mathsf{nPushVar}~x~s_2\\
+	\mathsf{nPushVar}~x~(\mathsf{Cond}~e~s)  := \mathsf{nPushVar}~x~s\\
+	\mathsf{nPushVar}~x~(\mathsf{While}~e~s)  := \mathsf{nPushVar}~x~s\\
+	\mathsf{nPushVar}~x~(\mathsf{PushVar}~y)  := \mathtt{if}(x\equiv y)~\mathtt{then}~1~\mathtt{else}~0\\
+	\mathsf{nPushVar}~x~(\mathsf{PopVar}~y) := 0
+\end{array}
+\]
+
+\begin{lemma}\label{lemma:1} If a statement $s$ has no While loops, starting from the heap $H$ and  $H~|~s \to H'~|~s'$, then for all $x$, $\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s$. 
+\end{lemma}
+\begin{proof}
+	Proof by induction on s.
+	\begin{itemize}
+		\item 
+			\textbf{Case $s=\mathsf{Nop}$}: In this case, no reduction of $s$ can be derived, thus the property hold.
+		\item 
+			\textbf{Case $s=\mathsf{Seq}~s_1~s_2$}: In this case, as $H~|~s \to H'~|~s'$, by the rule Step-Seq, there exists $s_1'$ s.t. 
+			\begin{equation}\label{eq:1}
+				H~|~s_1 \to H'~|~s_1'
+			\end{equation}
+			and
+			\begin{equation}\label{eq:2}
+				s'=\mathsf{Seq}~s_1'~s_2
+			\end{equation}
+			Thus, by induction and (1), we have the following property:
+			\begin{equation}\label{eq:3}
+				\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s'_1 \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s_1
+			\end{equation}
+			According to the definition of $\mathsf{nPushVar}~x~s$, we have that 
+			\begin{equation}\label{eq:4}
+				\mathsf{nPushVar}~x~(\mathsf{Seq}~s_1~s_2) = \mathsf{nPushVar}~x~s_1 + \mathsf{nPushVar}~x~s_2
+			\end{equation}
+			and
+			\begin{equation}\label{eq:5}
+				\mathsf{nPushVar}~x~(\mathsf{Seq}~s'_1~s_2) = \mathsf{nPushVar}~x~s'_1 + \mathsf{nPushVar}~x~s_2
+			\end{equation}
+			By substitution $\mathsf{nPushVar}~x~s'_1$ and $\mathsf{nPushVar}~x~s_1$ using \ref{eq:4} and \ref{eq:5}, we have 
+			\begin{equation}\label{eq:6}
+				\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~(\mathsf{Seq}~s'_1~s_2) \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~(\mathsf{Seq}~s_1~s_2)
+			\end{equation}
+			Beside, as we have \ref{eq:2} and $s=\mathsf{Seq}~s_1~s_2$, replacing them in \ref{eq:6}, we have
+			\begin{equation}\label{eq:7}
+				\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s
+			\end{equation}
+			and then the case is proved.
+		\item 
+			\textbf{Case $s=\mathsf{Cond}~e~s_1$}.
+			There are two subcases regarding to the value of $e$ evaluated under $H$.
+			\begin{itemize}
+				\item \textbf{Sub-Case $\mathsf{Eval}~H~e=\texttt{false}$}: According to the rule Step-Cond-F, after evaluation, $s'=Nop$ and $H'=H$. Thus 
+					$$\mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s' = \mathsf{length}~(\mathsf{snd}~(H~x))$$ and $$\mathsf{length}~(\mathsf{snd}~(H~x)) \leq \mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s$$
+				So the property holds for this sub-case.
+				\item \textbf{Sub-Case $\mathsf{Eval}~H~e=\texttt{true}$}
+					According to the rule Step-Cond-T, $s'=s_1$ and $H'=H$. By definition of $\mathsf{nPushVar}$, we have $\mathsf{nPushVar}~x~(\mathsf{Cond}~e~s_1) = \mathsf{nPushVar}~x~s_1$.
+					Thus we have 
+					$$\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' = \mathsf{length}~(\mathsf{snd}~(H~x))$$ and $$\mathsf{length}~(\mathsf{snd}~(H~x)) \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s$$
+					And the sub-case is proved.
+			\end{itemize}
+			With both of the subcase proved, we have the case proved.
+		\item \textbf{Case $s=\mathsf{While}~e~s_1$}. As we required that there is no $\mathsf{While}$ in $s$, this case does not exist.
+		\item \textbf{Case $s=\mathsf{PushVar}~y$}.
+			There are two subcases based on whether $y$ is $x$  or not.
+			\begin{itemize}
+				\item \textbf{Sub-case: $y\equiv x$}, in this case, $\mathsf{length} (H'~x) = \mathsf{length} (H~x) + 1$, while $\mathsf{nPushVar}~x~s = \mathsf{nPushVar}~x~s' + 1$.
+					So we have 
+					$$\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' = \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s$$
+					and the sub-case is proved.
+				\item \textbf{Sub-case: $y\neq x$}, in this case, after step-reduction, $\mathsf{snd}~(H~x)=\mathsf{snd}~(H'~x)$ and the number of $PushVar~x$ stay unchanged, so the lemma still holds.
+			\end{itemize}
+			Thus in the case the lemma holds.
+		\item \textbf{Case $s=\mathsf{PopVar}~y$}. Similar to the previous case, there are two subcases regarding to the equivalence of $x$ and $y$. 
+			\begin{itemize}
+			\item $x\equiv y$, then the number of $\mathsf{nPushVar~x}$ remain the same but the length of $\mathsf{snd}~H~x$ is reduced by 1, which means that 
+			$$\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' = \mathsf{length}~(\mathsf{snd}~(H~x)) - 1 + \mathsf{nPushVar}~x~s$$
+			and the lemma holds.
+			\item $x\neq y$, then both $\mathsf{snd}~(H~x)=\mathsf{snd}~(H'~x)$ and the number of $\mathsf{PushVar}~x$ stay unchanged, so the lemma holds.
+			\end{itemize}
+		Having these two sub-cases proved, the lemma holds in this case.
+	\end{itemize}
+	With all the case proved, the lemma hold for all $s$ and $H$.
+\end{proof}
+
+\begin{lemma}\label{lemma:2}
+	If a statement $s$ with heap $H$ can step to $s'$ with heap status $H'$, then for all $x$, we have $\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s$.
+\end{lemma}
+\begin{proof}
+	By induction on the number of derivation steps $n$.
+	\begin{itemize}
+	\item $n=1$, the case is proved according to the Lemma~\ref{lemma:1}.
+	\item $n=k+1$, by induction, $s$ with $H$ can step $k$ steps to $s_1$ with $H_1$, and 
+		\begin{equation}\label{eqn:9}
+			\mathsf{length}~(\mathsf{snd}~(H_1~x)) + \mathsf{nPushVar}~x~s_1 \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s.
+		\end{equation}
+		As we can step from $s_1$ with $H_1$ to $s'$ with $H'$ in one step, according to Lemma~\ref{lemma:1}, we have
+		\begin{equation}\label{eqn:10}
+			\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' \leq \mathsf{length}~(\mathsf{snd}~(H_1~x)) + \mathsf{nPushVar}~x~s_1.
+		\end{equation}
+		By combining \ref{eqn:9} with \ref{eqn:9}, we have 
+		\begin{equation}
+			\mathsf{length}~(\mathsf{snd}~(H'~x)) + \mathsf{nPushVar}~x~s' \leq \mathsf{length}~(\mathsf{snd}~(H~x)) + \mathsf{nPushVar}~x~s
+		\end{equation}
+		So that the case is proved.
+	\end{itemize}
+	Then we have the lemma proved.
+\end{proof}
+
+\begin{property}
+If a statement $s$ has no While loops and from the empty heap $s$ can step to heap $h'$ and statement $s'$, then for all variables $x$, the length of the stack for $x$ in $h'$ does not exceed the number of $\mathsf{PushVar}~x$ statements in $s$ (the original statement).
+\end{property}
+\begin{proof}
+ By applying Lemma~\ref{lemma:2} with $H=\{\forall~x.x\mapsto (0,[~])\}$, we have:
+ 	$$\mathsf{length}~(\mathsf{snd}~(~x)) + \mathsf{nPushVar}~x~s' \leq 0 + \mathsf{nPushVar}~x~s$$
+ By reduction, we have 
+ 	$$\mathsf{length}~(\mathsf{snd}~(H'~x)) \leq \mathsf{nPushVar}~x~s - \mathsf{nPushVar}~x~s'$$
+ as $\mathsf{nPushVar}~x~s'$ is alway greater than 0, we have:
+ 	$$\mathsf{length}~(\mathsf{snd}~(H'~x)) \leq \mathsf{nPushVar}~x~s$$
+ So the property is proved.
+\end{proof}
+
+\end{document}

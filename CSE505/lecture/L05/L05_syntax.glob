@@ -1,0 +1,93 @@
+DIGEST 3b82a0a74cf32f3c6480e3267d3d975a
+FL05_syntax
+R36:41 Coq.ZArith.ZArith <> <> lib
+R59:64 Coq.Strings.String <> <> lib
+ind 124:128 <> binop
+constr 141:143 <> Add
+constr 147:149 <> Sub
+constr 153:155 <> Mul
+constr 159:161 <> Div
+constr 165:167 <> Mod
+constr 171:172 <> Lt
+constr 176:178 <> Lte
+constr 182:185 <> Conj
+constr 189:192 <> Disj
+R144:144 L05_syntax <> binop ind
+R150:150 L05_syntax <> binop ind
+R156:156 L05_syntax <> binop ind
+R162:162 L05_syntax <> binop ind
+R168:168 L05_syntax <> binop ind
+R173:173 L05_syntax <> binop ind
+R179:179 L05_syntax <> binop ind
+R186:186 L05_syntax <> binop ind
+R193:193 L05_syntax <> binop ind
+ind 206:209 <> expr
+constr 222:224 <> Int
+constr 240:242 <> Var
+constr 263:267 <> BinOp
+R233:236 L05_syntax <> expr ind
+R228:228 Coq.Numbers.BinNums <> Z ind
+R256:259 L05_syntax <> expr ind
+R246:251 Coq.Strings.String <> string ind
+R296:299 L05_syntax <> expr ind
+R288:291 L05_syntax <> expr ind
+R280:283 L05_syntax <> expr ind
+R271:275 L05_syntax <> binop ind
+R312:314 L05_syntax <> Int constr
+R339:341 L05_syntax <> Var constr
+R386:390 L05_syntax <> BinOp constr
+R392:394 L05_syntax <> Add constr
+not 372 <> ::x_'[+]'_x
+R459:463 L05_syntax <> BinOp constr
+R465:467 L05_syntax <> Sub constr
+not 445 <> ::x_'[-]'_x
+R532:536 L05_syntax <> BinOp constr
+R538:540 L05_syntax <> Mul constr
+not 518 <> ::x_'[*]'_x
+R605:609 L05_syntax <> BinOp constr
+R611:613 L05_syntax <> Div constr
+not 591 <> ::x_'[/]'_x
+R735:739 L05_syntax <> BinOp constr
+R741:743 L05_syntax <> Mod constr
+not 721 <> ::x_'[%]'_x
+R808:812 L05_syntax <> BinOp constr
+R814:815 L05_syntax <> Lt constr
+not 794 <> ::x_'[<]'_x
+R861:865 L05_syntax <> BinOp constr
+R867:869 L05_syntax <> Lte constr
+not 846 <> ::x_'[<=]'_x
+R915:919 L05_syntax <> BinOp constr
+R921:924 L05_syntax <> Conj constr
+not 900 <> ::x_'[&&]'_x
+R990:994 L05_syntax <> BinOp constr
+R996:999 L05_syntax <> Disj constr
+not 975 <> ::x_'[||]'_x
+ind 1052:1055 <> stmt
+constr 1068:1070 <> Nop
+constr 1081:1086 <> Assign
+constr 1115:1117 <> Seq
+constr 1144:1147 <> Cond
+constr 1174:1178 <> While
+R1074:1077 L05_syntax <> stmt ind
+R1108:1111 L05_syntax <> stmt ind
+R1100:1103 L05_syntax <> expr ind
+R1090:1095 Coq.Strings.String <> string ind
+R1137:1140 L05_syntax <> stmt ind
+R1129:1132 L05_syntax <> stmt ind
+R1121:1124 L05_syntax <> stmt ind
+R1167:1170 L05_syntax <> stmt ind
+R1159:1162 L05_syntax <> stmt ind
+R1151:1154 L05_syntax <> expr ind
+R1198:1201 L05_syntax <> stmt ind
+R1190:1193 L05_syntax <> stmt ind
+R1182:1185 L05_syntax <> expr ind
+R1226:1228 L05_syntax <> Nop constr
+not 1214 <> ::'nop'
+R1268:1273 L05_syntax <> Assign constr
+not 1255 <> ::x_'<-'_x
+R1317:1319 L05_syntax <> Seq constr
+not 1304 <> ::x_';;'_x
+R1371:1374 L05_syntax <> Cond constr
+not 1350 <> ::'if'_x_'{{'_x_'}}'
+R1429:1433 L05_syntax <> While constr
+not 1405 <> ::'while'_x_'{{'_x_'}}'
